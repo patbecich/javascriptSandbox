@@ -11,7 +11,7 @@ import           Web.Scotty
 
 
 scottyMain :: IO ()
-scottyMain = scotty 8000 $ do
+scottyMain = scotty 80 $ do
   middleware $ staticPolicy (noDots >-> addBase "static")
   get "/" $ file "static/deflection.html"
   get "/breakOut" $ file "static/breakOut.html"
