@@ -30,6 +30,10 @@ var bricks = [];
 
 var backend = "http://localhost:8000"
 
+var gamestatus = ""
+
+var status = true
+
 for(c=0; c<brickColumnCount; c++) {
     bricks[c] = [];
     for(r=0; r<brickRowCount; r++) {
@@ -41,6 +45,8 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler,false);
 
 document.addEventListener("mousemove", mouseMoveHandler, false);
+
+if (status) {draw();}
 
 function keyDownHandler(e) {
     if(e.keyCode == 39) {
@@ -86,7 +92,10 @@ function collisionDetection() {
 
 		    if(score == brickRowCount*brickColumnCount) {
                         //alert("YOU WIN, CONGRATULATIONS!");
-                        document.location.reload();
+                        //document.location.reload();
+			gamestatus = "Congratulations, you have won!";
+			document.getElementById("gameOutcome").innerHTML = gamestatus;
+			status = false;
 		    }
 		}
             }
@@ -158,13 +167,16 @@ function draw() {
 	    lives--;
 	    if(!lives) {
 		//alert("GAME OVER");
-		document.location.reload();
+		//document.location.reload();
+		gamestatus = "Congratulations, you have lost!";
+		document.getElementById("gameOutcome").innerHTML = gamestatus;
+		status = false;
 	    }
 	    else {
 		x = canvas.width/2;
 		y = canvas.height-30;
-		dx = 8;
-		dy = -8;
+		dx = 3;
+		dy = -3;
 		paddleX = (canvas.width-paddleWidth)/2;
 	    }
 	    
@@ -181,15 +193,16 @@ function draw() {
     else if(leftPressed && paddleX > 0) {
         paddleX -= 7;
     }
-    requestAnimationFrame(draw);
-}
+    if (status) { 
+	requestAnimationFrame(draw);}
 
+    
+}
 
 
 
 //setInterval(draw, 10);
 
-draw();
 
 var ballRadius = 10;
 
