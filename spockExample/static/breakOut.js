@@ -34,6 +34,7 @@ var gamestatus = ""
 
 var continueGame = true
 
+//var nameInput = document.getElementById("player")
 
 for(c=0; c<brickColumnCount; c++) {
     bricks[c] = [];
