@@ -17,6 +17,19 @@ var vectors = {}
 
 var gravityPoint = {x: canvas.width/2, y: canvas.height/2}
 
+document.addEventListener("mousemove", mouseMoveHandler, false);
+
+function mouseMoveHandler(e) {
+    var relativeX = e.clientX - canvas.offsetLeft;
+    if(relativeX > 0 && relativeX < canvas.width) {
+        gravityPoint.x = relativeX;
+    }
+    var relativeY = e.clientY - canvas.offsetTop;
+    if(relativeY > 0 && relativeY < canvas.width) {
+	gravityPoint.y = relativeY;
+    }
+}
+
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
@@ -30,7 +43,7 @@ function createVectors(n){
 }
 
 //masterDraw();
-initialize(20)
+initialize(10)
 
 // function collisionDetection() {
 //     for(c=0; c<brickColumnCount; c++) {
@@ -158,7 +171,7 @@ function accelerationVector(ballVector){
 var ballMass = 1
 
 var blackHoleMass = 10
-var gravity = 500
+var gravity = 700
 
 var ballRadius = 10;
 
