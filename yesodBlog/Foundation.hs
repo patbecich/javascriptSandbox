@@ -142,6 +142,7 @@ instance Yesod App where
     isAuthorized (StaticR _) _ = return Authorized
     isAuthorized ProfileR _ = isAuthenticated
     isAuthorized PostNewBlogEntryR _ = return Authorized
+    isAuthorized (PostDetailsR _) _ = return Authorized
     isAuthorized _ _ = return $ Unauthorized "unauthorized"
 
     -- This function creates static content files in the static folder
