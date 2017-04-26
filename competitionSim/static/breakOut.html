@@ -26,7 +26,15 @@
       					     
 
     <p id="gameOutcome"></p>
+
+    <br>
     
+    <script type="text/javascript">
+      jQuery.get("hello", function ( data ) { document.getElementById("hitCounter").innerHTML = data })
+    </script>
+
+    <p id="hitCounter"></p>
+
     
   </body>
 </html>

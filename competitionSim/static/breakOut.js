@@ -6,29 +6,38 @@ var ctx = canvas.getContext("2d");
 // var dx = 3;
 // var dy = -3;
 
+var ballMass = 1;
 
-var backend = "http://localhost:8000"
+var blackHoleMass = 10;
+var gravity = 700;
 
-// var vectors = {ball1: {x: canvas.width/2, y: canvas.height-75, dx: 0, dy: 0} , ball2: {x: canvas.width, y: canvas.height, dx: -20, dy: 0}, ball3: {x: canvas.width-75, y: canvas.height/2, dx: 0, dy: 0} , ball4: {x: canvas.width, y: 0, dx: 0, dy: 0}, ball5: {x: canvas.width/2, y: 0, dx: 0, dy: 0} , ball6: {x:0, y: 0, dx: 0, dy: 0}, ball7: {x: 0, y: canvas.height/2, dx: 0, dy: 0} , ball8: {x: 0, y: canvas.height, dx: 0, dy: 0}}
+//var ballRadius = 10;
+
+var fcoeff = 0.9;
+
+
+var backend = "http://localhost:8000";
+
+var vectors = {ball1: {s: 1, m: 1, x: canvas.width/4, y: canvas.height/2, dx: 0, dy: 0, maxS: 5} , ball2: {s: 1, m: 10, x: canvas.width*(.75), y: canvas.height/2, dx: 0, dy: 0, maxS: 5}, ball3: {s: 1, m: 20, x: canvas.width*(.75), y: canvas.height/3, dx: 0, dy: 0, maxS: 5}};
+	       // ball3: {s: 1, m: 1, x: canvas.width-75, y: canvas.height/2, dx: 0, dy: 0, maxS: 10} , ball4: {s: 1, m: 1, x: canvas.width, y: 0, dx: 0, dy: 0, maxS: 10}, ball5: {s: 1, m: 1, x: canvas.width/2, y: 0, dx: 0, dy: 0, maxS: 10} , ball6: {s: 1, m: 1, x:0, y: 0, dx: 0, dy: 0, maxS: 10}, ball7: {s: 1, m: 1, x: 0, y: canvas.height/2, dx: 0, dy: 0, maxS: 10} , ball8: {s: 1, m: 1, x: 0, y: canvas.height, dx: 0, dy: 0, maxS: 10}};
 
 
 
-var vectors = {}
+//var vectors = {};
 
-var gravityPoint = {x: canvas.width/2, y: canvas.height/2}
 
-document.addEventListener("mousemove", mouseMoveHandler, false);
+//document.addEventListener("mousemove", mouseMoveHandler, false);
 
-function mouseMoveHandler(e) {
-    var relativeX = e.clientX - canvas.offsetLeft;
-    if(relativeX > 0 && relativeX < canvas.width) {
-        gravityPoint.x = relativeX;
-    }
-    var relativeY = e.clientY - canvas.offsetTop;
-    if(relativeY > 0 && relativeY < canvas.width) {
-	gravityPoint.y = relativeY;
-    }
-}
+// function mouseMoveHandler(e) {
+//     var relativeX = e.clientX - canvas.offsetLeft;
+//     if(relativeX > 0 && relativeX < canvas.width) {
+//         gravityPoint.x = relativeX;
+//     }
+//     var relativeY = e.clientY - canvas.offsetTop;
+//     if(relativeY > 0 && relativeY < canvas.width) {
+// 	gravityPoint.y = relativeY;
+//     }
+// }
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
@@ -43,47 +52,21 @@ function createVectors(n){
 }
 
 //masterDraw();
-initialize(10)
+//initialize(10)
 
-// function collisionDetection() {
-//     for(c=0; c<brickColumnCount; c++) {
-//         for(r=0; r<brickRowCount; r++) {
-//             var b = bricks[c][r];
-// 	    if(b.status == 1) {
-// 		if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
-//                     if (dy < 0) {dy = -dy + 1;}
-// 		    else if (dy > 0) {dy = -dy - 1};
-// 		    if (dx < 0) {dx = dx - 1;}
-// 		    else if (dx > 0) {dx = dx + 1};
-		    
-// 		    b.status = 0;
-// 		    score++;
-// 		    jQuery.post(backend+"/breakOutScore?score="+score, function ( data ) { console.log ("received response"+data) })
+//function collisionDetection() {
 
-// 		    if(score == brickRowCount*brickColumnCount) {
-//                         //alert("YOU WIN, CONGRATULATIONS!");
-//                         //document.location.reload();
-// 			gamestatus = "Congratulations, you have won!";
-// 			//document.getElementById("gameOutcome").innerHTML = gamestatus;
-// 			continueGame = false;
-// 		    }
-// 		}
-//             }
-//         }
-//     }
-// }
-
-function drawBall (x, y) {
+function drawBall (x, y, r) {
     ctx.beginPath();
-    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+    ctx.arc(x, y, ballRadius(r), 0, Math.PI*2);
     ctx.fillStyle = "blue";
     ctx.fill();
     ctx.closePath();
 }
 
 function initialize(n){
-    createVectors(n)
-    masterDraw()
+    createVectors(n);
+    masterDraw();
 }
 
 
@@ -91,87 +74,140 @@ function masterDraw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (var key in vectors) {
 	if (vectors.hasOwnProperty(key)) {
-	    draw(vectors[key])
+	    draw(vectors[key], vectors);
 	    //console.log(key + " -> " + vectors[key]); 
 	}
     }
     requestAnimationFrame(masterDraw);
 }
     
-function draw(ballVector) {
+function draw(ballVector,allVectors) {
 
-    drawBall(ballVector.x, ballVector.y);
-    ballVector.x += ballVector.dx;
-    ballVector.y += ballVector.dy;
+    targetFinding(ballVector,allVectors);
+    drawBall(ballVector.x, ballVector.y, ballVector.m);
 
-    // ballVector.dx += Math.min(ballVector.dx + accelerationVector(ballVector).ax, 15)
-
-    // ballVector.dy += Math.min(ballVector.dy + accelerationVector(ballVector).ay, 15)
-    
-    if(Math.abs(ballVector.dx + accelerationVector(ballVector).ax) <= 15) {
-    	ballVector.dx += accelerationVector(ballVector).ax
-    }//else {console.log ("excessive x acceleration")}
-    if(Math.abs(ballVector.dy + accelerationVector(ballVector).ay) <= 15) {
-    	ballVector.dy += accelerationVector(ballVector).ay
-    }//else {console.log ("excessive y acceleration")}
-    
-    if(ballVector.y + ballVector.dy < ballRadius || ballVector.y + ballVector.dy > canvas.height-ballRadius) {
+    if(ballVector.y + ballVector.dy < ballRadius(ballVector.m) || ballVector.y + ballVector.dy > canvas.height-ballRadius(ballVector.m)) {
     	ballVector.dy = -ballVector.dy;
     }
     
-    if(ballVector.x + ballVector.dx > canvas.width - ballRadius || ballVector.x + ballVector.dx < ballRadius) {
+    if(ballVector.x + ballVector.dx > canvas.width - ballRadius(ballVector.m) || ballVector.x + ballVector.dx < ballRadius(ballVector.m)) {
     	ballVector.dx = -ballVector.dx;
     }
-    
-}
-    
-// function forceG(g,m1,m2,r){
-//     return (g*m1*m2)/(Math.pow(r, 2))
-// }
-
-function forceG(g,m1,m2,r){
-    return (g*m1*m2)/r
+    ballVector.x += ballVector.dx;
+    ballVector.y += ballVector.dy;
 }
 
+
+function targetFinding(ballVector, allVectors){
+    var target = "none";
+    if (nearestPredator(ballVector, allVectors) != "none" && vectorDist(ballVector, allVectors[nearestPredator(ballVector, allVectors)]) < 100) {
+	target = allVectors[nearestPredator(ballVector, allVectors)];
+	if (Math.abs(ballVector.dx + accelerationVector(ballVector, target).ax) <= ballVector.maxS){
+	    ballVector.dx += accelerationVector(ballVector, target).ax;
+	}
+	if (Math.abs(ballVector.dy + accelerationVector(ballVector, target).ay) <= ballVector.maxS){
+	    ballVector.dy += accelerationVector(ballVector, target).ay;
+	}
+    }
+    else if (nearestPrey(ballVector, allVectors) != "none"){
+	target = allVectors[nearestPrey(ballVector, allVectors)];
+    	if (Math.abs(ballVector.dx - accelerationVector(ballVector, target).ax) <= ballVector.maxS){
+	    ballVector.dx -= accelerationVector(ballVector, target).ax;
+	}
+	if (Math.abs(ballVector.dy - accelerationVector(ballVector, target).ay) <= ballVector.maxS){
+	    ballVector.dy -= accelerationVector(ballVector, target).ay;
+	}
+    }
+}
+
+	    
+
+function nearestPrey(ballVector, allVectors){
+    var closestPrey = "none";
+    var closestDist = Infinity;
+    for (var key in allVectors) {
+	if (allVectors.hasOwnProperty(key) && allVectors[key] != ballVector && massCheckGreater(ballVector, allVectors[key])) {
+	    if (vectorDist(ballVector, allVectors[key]) < closestDist) {
+		closestDist = vectorDist(ballVector, key);
+		closestPrey = key;   }
+	       }
+    }
+    return(closestPrey);
+    }
+
+function nearestPredator(ballVector, allVectors){
+    var closestPredator = "none";
+    var closestDist = Infinity;
+    for (var key in allVectors) {
+	if (allVectors.hasOwnProperty(key) && allVectors[key] != ballVector && massCheckLesser(ballVector, allVectors[key])) {
+	    if (vectorDist(ballVector, allVectors[key]) < closestDist) {
+		closestDist = vectorDist(ballVector, allVectors[key]);
+		closestPredator = key;   }
+	       }
+    }
+    return(closestPredator);
+    }
+
+function massCheckGreater(vector1, vector2){
+    if (vector1.m > vector2.m){
+	return true;}
+    else return false;
+}
+
+function massCheckLesser(vector1, vector2){
+    if (vector1.m < vector2.m){
+	return true;}
+    else return false;
+}
+function ballRadius(m){
+    return (10 * Math.sqrt(m/Math.PI));
+}
+function forceForMass(m){
+    return (Math.log(m)+1);
+}
 
 function accel(f, m){
-    return (f/m)
+    return (f/m);
 }
 
 function relAngle (x1,y1,x2,y2){
     var deltaX = x2 - x1;
     var deltaY = y2 - y1;
     var rad = Math.atan2(deltaY, deltaX);
-    return rad
+    return rad;
     //return rad * (180 / Math.PI) 
 }
 function dist(x1,y1,x2,y2){
-    var a = x1 - x2
-    var b = y1 - y2
+    var a = x1 - x2;
+    var b = y1 - y2;
     var dist = Math.sqrt( a*a + b*b );
-    return dist*100
+    return dist;
 }
 
-function forceVector(ballVector){
-    var radius = dist(gravityPoint.x,gravityPoint.y,ballVector.x,ballVector.y)
-    var angle = relAngle (gravityPoint.x,gravityPoint.y,ballVector.x,ballVector.y)
-    var force = forceG(gravity,blackHoleMass,ballMass,radius)
-    var fx = force * -Math.cos(angle)
-    var fy = force * -Math.sin(angle)
-    return {fx: fx, fy: fy}
+function vectorDist(vector1, vector2){
+    // console.log(vector1);
+    // console.log(vector2);
+    var a = (vector1.x - vector2.x);
+    var b = (vector2.y - vector2.y);
+    var dist = Math.sqrt( a*a + b*b );
+    return dist;
+}
+		    
+function forceVector(hunterVector, targetVector){
+    // console.log(hunterVector);
+    // console.log(targetVector);
+    var radius = dist(hunterVector.x,hunterVector.y,targetVector.x,targetVector.y);
+    var angle = relAngle (hunterVector.x,hunterVector.y,targetVector.x,targetVector.y);
+    var force = forceForMass(hunterVector.m);
+    var fx = force * -Math.cos(angle);
+    var fy = force * -Math.sin(angle);
+    return {fx: fx, fy: fy};
 }
 
-function accelerationVector(ballVector){
-    var fvector = forceVector(ballVector)
-    var ax = accel(fvector.fx, ballMass)
-    var ay = accel(fvector.fy, ballMass)
-    return {ax: ax, ay: ay}
+function accelerationVector(hunterVector, targetVector){
+    var fvector = forceVector(hunterVector, targetVector);
+    var ax = accel(fvector.fx, hunterVector.m);
+    var ay = accel(fvector.fy, hunterVector.m);
+    return {ax: ax, ay: ay};
 }
-
-var ballMass = 1
-
-var blackHoleMass = 10
-var gravity = 700
-
-var ballRadius = 10;
 
