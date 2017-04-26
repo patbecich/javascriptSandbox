@@ -1,0 +1,8 @@
+flags: {}
+extra-package-dbs: []
+packages:
+- '.'
+extra-deps:
+- aeson-0.11.3.0
+- yesod-text-markdown-0.1.8
+resolver: lts-8.11
