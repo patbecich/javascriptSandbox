@@ -84,6 +84,7 @@ library
                 , wai-logger                    >= 2.2        && < 2.4
                 , yesod-websockets
                 , uuid
+                , hedis
                 -- , stm-lifted
                 -- , conduit-combinators
                 , file-embed

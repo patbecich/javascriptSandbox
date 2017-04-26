@@ -10,17 +10,20 @@ import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
 import Data.IORef
 import qualified Data.UUID as U
+import qualified Database.Redis as R
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
+-- https://gist.github.com/bitemyapp/08feb81c6aed4e4e87a9
 data App = App
     { appSettings    :: AppSettings
     , appStatic      :: Static -- ^ Settings for static file serving.
     , appHttpManager :: Manager
     , appLogger      :: Logger
     , visitors       :: IORef Int
+    , appRedisPool   :: R.Connection
     }
 
 data MenuItem = MenuItem

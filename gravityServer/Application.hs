@@ -12,6 +12,7 @@ module Application
     , handler
     ) where
 
+import qualified Database.Redis as R
 import Control.Monad.Logger                 (liftLoc)
 import Import
 import Language.Haskell.TH.Syntax           (qLocation)
@@ -55,6 +56,7 @@ makeFoundation appSettings = do
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
     visitors <- newIORef 0
+    appRedisPool <- R.connect R.defaultConnectInfo
     -- Return the foundation
     return App {..}
 
