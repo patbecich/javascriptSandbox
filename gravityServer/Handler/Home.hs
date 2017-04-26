@@ -15,5 +15,7 @@ getHomeR :: Handler Html
 getHomeR = defaultLayout $ do
   let aDomId = "foo"
   _ <- setTitle "Welcome To Yesod!"
+  visitorsRef <- fmap visitors getYesod
+  visitors <- liftIO $ atomicModifyIORef visitorsRef $ \i -> (i + 1, i + 1)
   $(widgetFile "homepage")
 

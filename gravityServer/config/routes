@@ -7,3 +7,4 @@
 
 /breakOut BreakOutR GET
 /breakOut/leaderboard BreakOutLeaderboardR GET POST
+/breakOut/collision/#U.UUID BreakOutCollisionR POST
