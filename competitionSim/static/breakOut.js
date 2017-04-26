@@ -18,12 +18,12 @@ var fcoeff = 0.9;
 
 var backend = "http://localhost:8000";
 
-var vectors = {ball1: {s: 1, m: 1, x: canvas.width/4, y: canvas.height/2, dx: 0, dy: 0, maxS: 5} , ball2: {s: 1, m: 10, x: canvas.width*(.75), y: canvas.height/2, dx: 0, dy: 0, maxS: 5}, ball3: {s: 1, m: 20, x: canvas.width*(.75), y: canvas.height/3, dx: 0, dy: 0, maxS: 5}};
+//var vectors = {ball1: {s: 1, m: 1, x: canvas.width/4, y: canvas.height/2, dx: 0, dy: 0, maxS: 5} , ball2: {s: 1, m: 10, x: canvas.width*(.75), y: canvas.height/2, dx: 0, dy: 0, maxS: 5}, ball3: {s: 1, m: 20, x: canvas.width*(.75), y: canvas.height/3, dx: 0, dy: 0, maxS: 5}};
 	       // ball3: {s: 1, m: 1, x: canvas.width-75, y: canvas.height/2, dx: 0, dy: 0, maxS: 10} , ball4: {s: 1, m: 1, x: canvas.width, y: 0, dx: 0, dy: 0, maxS: 10}, ball5: {s: 1, m: 1, x: canvas.width/2, y: 0, dx: 0, dy: 0, maxS: 10} , ball6: {s: 1, m: 1, x:0, y: 0, dx: 0, dy: 0, maxS: 10}, ball7: {s: 1, m: 1, x: 0, y: canvas.height/2, dx: 0, dy: 0, maxS: 10} , ball8: {s: 1, m: 1, x: 0, y: canvas.height, dx: 0, dy: 0, maxS: 10}};
 
 
 
-//var vectors = {};
+var vectors = {};
 
 
 //document.addEventListener("mousemove", mouseMoveHandler, false);
@@ -47,14 +47,27 @@ function createVectors(n){
     for (var i = 1; i <= n; i++){
 	//console.log("hello");
 	//vectors.i = {x: canvas.width/2, y: canvas.height-30, dx: 3, dy: -3} ;
-	vectors[("ball"+String(i))] = {x: canvas.width/2, y: canvas.height-30, dx: getRandomArbitrary(-5,5), dy: getRandomArbitrary(-5,5)}
+	vectors[("ball"+String(i))] = {s: 1, m: getRandomArbitrary(1,5), x: (canvas.width-20)/getRandomArbitrary(1,10), y: (canvas.height-20)/getRandomArbitrary(1,10), dx: getRandomArbitrary(-5,5), dy: getRandomArbitrary(-5,5), maxS: getRandomArbitrary(3,5), captures: 0};
     }
 }
 
 //masterDraw();
 //initialize(10)
 
-//function collisionDetection() {
+function collisionDetection(ballVector, allVectors) {
+    if (nearestPredator(ballVector, allVectors) != "none"){
+	var predator = allVectors[nearestPredator(ballVector, allVectors)];
+	if (vectorDist(ballVector, predator) < ballRadius(predator.m)) {
+	    //console.log("caught");
+	    ballVector.s = 0;
+	    ballVector.x = 2*canvas.width;
+	    ballVector.y = 2*canvas.height;
+	    predator.captures += 1;
+	    predator.m += ballVector.m;
+	}
+    }
+}
+
 
 function drawBall (x, y, r) {
     ctx.beginPath();
@@ -73,7 +86,7 @@ function initialize(n){
 function masterDraw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (var key in vectors) {
-	if (vectors.hasOwnProperty(key)) {
+	if (vectors.hasOwnProperty(key) && vectors[key].s == 1) {
 	    draw(vectors[key], vectors);
 	    //console.log(key + " -> " + vectors[key]); 
 	}
@@ -82,7 +95,7 @@ function masterDraw() {
 }
     
 function draw(ballVector,allVectors) {
-
+    collisionDetection(ballVector, allVectors);
     targetFinding(ballVector,allVectors);
     drawBall(ballVector.x, ballVector.y, ballVector.m);
 
@@ -95,6 +108,7 @@ function draw(ballVector,allVectors) {
     }
     ballVector.x += ballVector.dx;
     ballVector.y += ballVector.dy;
+   
 }
 
 
@@ -126,9 +140,9 @@ function nearestPrey(ballVector, allVectors){
     var closestPrey = "none";
     var closestDist = Infinity;
     for (var key in allVectors) {
-	if (allVectors.hasOwnProperty(key) && allVectors[key] != ballVector && massCheckGreater(ballVector, allVectors[key])) {
+	if (allVectors.hasOwnProperty(key) && allVectors[key] != ballVector && allVectors[key].s != 0 && massCheckGreater(ballVector, allVectors[key])) {
 	    if (vectorDist(ballVector, allVectors[key]) < closestDist) {
-		closestDist = vectorDist(ballVector, key);
+		closestDist = vectorDist(ballVector, allVectors[key]);
 		closestPrey = key;   }
 	       }
     }
@@ -139,7 +153,7 @@ function nearestPredator(ballVector, allVectors){
     var closestPredator = "none";
     var closestDist = Infinity;
     for (var key in allVectors) {
-	if (allVectors.hasOwnProperty(key) && allVectors[key] != ballVector && massCheckLesser(ballVector, allVectors[key])) {
+	if (allVectors.hasOwnProperty(key) && allVectors[key] != ballVector && allVectors[key].s != 0 && massCheckLesser(ballVector, allVectors[key])) {
 	    if (vectorDist(ballVector, allVectors[key]) < closestDist) {
 		closestDist = vectorDist(ballVector, allVectors[key]);
 		closestPredator = key;   }
@@ -188,7 +202,7 @@ function vectorDist(vector1, vector2){
     // console.log(vector1);
     // console.log(vector2);
     var a = (vector1.x - vector2.x);
-    var b = (vector2.y - vector2.y);
+    var b = (vector1.y - vector2.y);
     var dist = Math.sqrt( a*a + b*b );
     return dist;
 }
