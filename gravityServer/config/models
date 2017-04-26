@@ -1,0 +1,4 @@
+Leaderboard
+	name Text
+	score Int
+	gameID U.UUID sqltype=uuid default=uuid_generate_v4()

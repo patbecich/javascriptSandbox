@@ -6,5 +6,6 @@
 / HomeR GET
 
 /breakOut BreakOutR GET
-/breakOut/leaderboard BreakOutLeaderboardR GET POST
-/breakOut/collision/#U.UUID BreakOutCollisionR POST
+/breakOut/leaderboard BreakOutLeaderboardR GET
+/breakOut/leaderboard/#{U.UUID} BreakOutLeaderboardSubmitR POST
+/breakOut/collision/#{U.UUID} BreakOutCollisionR POST

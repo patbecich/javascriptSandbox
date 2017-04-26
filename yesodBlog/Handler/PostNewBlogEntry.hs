@@ -30,4 +30,7 @@ postPostNewBlogEntryR = do
       blogPostId <- runDB $ insert blogPost
       redirect $ PostDetailsR blogPostId
     _ -> defaultLayout $(widgetFile "posts/new")
+  
+
+
 

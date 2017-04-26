@@ -82,6 +82,9 @@ library
                 , monad-logger                  >= 0.3        && < 0.4
                 , fast-logger                   >= 2.2        && < 2.5
                 , wai-logger                    >= 2.2        && < 2.4
+                , persistent                    >= 2.0        && < 2.7
+                , persistent-postgresql         >= 2.1.1      && < 2.7
+                , persistent-template           >= 2.0        && < 2.7
                 , yesod-websockets
                 , uuid
                 , hedis

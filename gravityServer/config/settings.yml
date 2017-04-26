@@ -22,3 +22,13 @@ ip-from-header: "_env:IP_FROM_HEADER:false"
 
 copyright: Insert copyright statement here
 #analytics: UA-YOURCODE
+
+
+database:
+  user:     "_env:PGUSER:gravity"
+  password: "_env:PGPASS:gravity"
+  host:     "_env:PGHOST:localhost"
+  port:     "_env:PGPORT:5432"
+  # See config/test-settings.yml for an override during tests
+  database: "_env:PGDATABASE:gravity_test"
+  poolsize: "_env:PGPOOLSIZE:10"

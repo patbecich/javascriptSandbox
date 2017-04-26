@@ -11,6 +11,8 @@ import qualified Data.Text.Encoding as TE
 import Data.IORef
 import qualified Data.UUID as U
 import qualified Database.Redis as R
+import qualified Data.ByteString.Char8 as BS
+import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -22,6 +24,7 @@ data App = App
     , appStatic      :: Static -- ^ Settings for static file serving.
     , appHttpManager :: Manager
     , appLogger      :: Logger
+    , appConnPool    :: ConnectionPool -- for Postgres
     , visitors       :: IORef Int
     , appRedisPool   :: R.Connection
     }
@@ -49,6 +52,7 @@ data MenuTypes
 -- type Handler = HandlerT App IO
 -- type Widget = WidgetT App IO ()
 mkYesodData "App" $(parseRoutesFile "config/routes")
+
 
 instance PathPiece U.UUID where
   toPathPiece = U.toText
@@ -121,6 +125,16 @@ instance Yesod App where
 instance YesodBreadcrumbs App where
   breadcrumb HomeR = return ("Home", Nothing)
   breadcrumb  _ = return ("home", Nothing)
+
+-- How to run database actions.
+instance YesodPersist App where
+    type YesodPersistBackend App = SqlBackend
+    runDB action = do
+        master <- getYesod
+        runSqlPool action $ appConnPool master
+instance YesodPersistRunner App where
+    getDBRunner = defaultGetDBRunner appConnPool
+  
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
