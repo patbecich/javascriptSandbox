@@ -14,7 +14,8 @@ getBreakOutLeaderboardR = error "Not yet implemented: getBreakOutLeaderboardR"
 
 postBreakOutLeaderboardSubmitR :: UUID -> Handler Html
 postBreakOutLeaderboardSubmitR gameUUID = do
-  name <- lookupPostParam "id"
+  maybeName <- lookupPostParam "name"
+  let name = fromMaybe "Nameless" maybeName
   _ <- liftIO $ putStrLn $ T.pack (show name) ++ " submits a score to leaderboard"
   app <- getYesod
   let redisPool = appRedisPool app
@@ -24,7 +25,7 @@ postBreakOutLeaderboardSubmitR gameUUID = do
       maybeScore = either (\_ -> (Just 0)) id eitherScoreInt
       score = fromMaybe 0 maybeScore
       -- leaderboardEntry = undefined
-      leaderboardEntry = Leaderboard "foobar" score gameUUID
+      leaderboardEntry = Leaderboard name score gameUUID
   _ <- runDB $ insert leaderboardEntry
   return "received"
 

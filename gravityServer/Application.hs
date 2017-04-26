@@ -13,9 +13,12 @@ module Application
     ) where
 
 import qualified Database.Redis as R
-import Control.Monad.Logger                 (liftLoc)
+import Control.Monad.Logger                 (liftLoc, runLoggingT)
 import Import
 import Language.Haskell.TH.Syntax           (qLocation)
+import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
+                                             pgPoolSize, runSqlPool)
+
 import Network.Wai (Middleware)
 import Network.Wai.Handler.Warp             (Settings, defaultSettings,
                                              defaultShouldDisplayException,
@@ -57,8 +60,27 @@ makeFoundation appSettings = do
         (appStaticDir appSettings)
     visitors <- newIORef 0
     appRedisPool <- R.connect R.defaultConnectInfo
+
+    -- We need a log function to create a connection pool. We need a connection
+    -- pool to create our foundation. And we need our foundation to get a
+    -- logging function. To get out of this loop, we initially create a
+    -- temporary foundation without a real connection pool, get a log function
+    -- from there, and then create the real foundation.
+    let mkFoundation appConnPool = App {..}
+        -- The App {..} syntax is an example of record wild cards. For more
+        -- information, see:
+        -- https://ocharles.org.uk/blog/posts/2014-12-04-record-wildcards.html
+        tempFoundation = mkFoundation $ error "connPool forced in tempFoundation"
+        logFunc = messageLoggerSource tempFoundation appLogger
+
+    
+    appConnPool <- flip runLoggingT logFunc $ createPostgresqlPool
+        (pgConnStr  $ appDatabaseConf appSettings)
+        (pgPoolSize $ appDatabaseConf appSettings)
     -- Return the foundation
-    return App {..}
+    _ <- runLoggingT (runSqlPool (runMigration migrateAll) appConnPool) logFunc
+    
+    return $ mkFoundation appConnPool
 
 -- | Convert our foundation to a WAI Application by calling @toWaiAppPlain@ and
 -- applying some additional middlewares.

@@ -6,4 +6,6 @@ Game ID: #{show gameUUID}
 
 <canvas id="breakOutCanvas" width="480" height="320">
 
-<p id="gameOutcome">    
+<p id="gameOutcome">
+<br>
+<p id="playerName">

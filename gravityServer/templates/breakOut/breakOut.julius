@@ -99,6 +99,7 @@ function collisionDetection() {
                         //document.location.reload();
 			gamestatus = "Congratulations, you have won!";
 			//document.getElementById("gameOutcome").innerHTML = gamestatus;
+			jQuery.post("breakOut/leaderboard/#{rawJS gameUUIDString}?id=Peter", function ( data ) { } )
 			continueGame = false;
 		    }
 		}
@@ -175,7 +176,14 @@ function draw() {
 		    //alert("GAME OVER");
 		    //document.location.reload();
 		    gamestatus = "Congratulations, you have lost!";
+
+		    var input = document.createElement("input");
+		    input.setAttribute('type', 'text');
+		    var inputParent = document.getElementById("playerName");
+		    inputParent.appendChild(input);
+
 		    //document.getElementById("gameOutcome").innerHTML = gamestatus;
+                    jQuery.post("breakOut/leaderboard/#{rawJS gameUUIDString}?id=Peter", function ( data ) { } )
 		    continueGame = false;
 		}
 		else {
