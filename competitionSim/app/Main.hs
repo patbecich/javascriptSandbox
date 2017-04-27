@@ -28,6 +28,5 @@ app =
            do (DummyAppState ref) <- getState
               visitorNumber <- liftIO $ atomicModifyIORef' ref $ \i -> (i+1, i+1)
               text ("Hello, you are visitor number " <> T.pack (show visitorNumber))
-       get "/fish" $ file "fish" "static/breakOut.html"
-       get root $ file "fish" "static/breakOut.html"
+       get root $ file "competitionSim" "static/breakOut.html"
        middleware $ staticPolicy (noDots >-> addBase "static")
